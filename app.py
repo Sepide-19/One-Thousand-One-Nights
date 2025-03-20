@@ -2,13 +2,18 @@ import openai
 from flask import Flask, request, jsonify, render_template
 import os
 from dotenv import load_dotenv
+from flask_cors import CORS  # اضافه کردن CORS
 
 # بارگذاری متغیرهای محیطی از فایل .env
 load_dotenv()
 
+# ایجاد برنامه Flask
 app = Flask(__name__)
 
-# Set your OpenAI API key
+# اضافه کردن CORS برای رفع مشکلات کراس اوریجین
+CORS(app)
+
+# Set your OpenAI API key from environment variable
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route('/')
@@ -17,34 +22,39 @@ def index():
 
 @app.route('/generate', methods=['POST'])
 def generate_content():
+    # دریافت داده‌ها از درخواست POST
     data = request.json
     emojis = data.get('emojis')
     theme = data.get('theme')
 
+    # بررسی اینکه آیا داده‌ها ارسال شده‌اند یا خیر
     if not emojis or not theme:
         return jsonify({'error': 'Emojis and theme are required'}), 400
 
-    # Send request to OpenAI's API for story generation using the new method
+    # ایجاد درخواست برای تولید داستان از OpenAI
     prompt = f"Generate a story with the following emojis: {emojis} and theme: {theme}"
+    try:
+        # درخواست به OpenAI برای تولید داستان
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",  # مدل مورد استفاده
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=200
+        )
+        story = response['choices'][0]['message']['content'].strip()
 
-    # استفاده از روش جدید برای ارسال درخواست و دریافت پاسخ
-    response = openai.Completion.create(
-        model="text-davinci-003",  # استفاده از مدل جدید
-        prompt=prompt,
-        max_tokens=200
-    )
+        # ایجاد تصویر از داستان
+        image_response = openai.Image.create(
+            prompt=story,
+            n=1,
+            size="1024x1024"
+        )
+        image_url = image_response['data'][0]['url']
 
-    story = response['choices'][0]['text'].strip()  # دریافت متن داستان
+        return jsonify({'story': story, 'image_url': image_url})
 
-    # Generate an image based on the story
-    image_response = openai.Image.create(
-        prompt=story,
-        n=1,
-        size="1024x1024"
-    )
-    image_url = image_response['data'][0]['url']
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-    return jsonify({'story': story, 'image_url': image_url})
 
 @app.route('/save', methods=['POST'])
 def save_content():
@@ -55,7 +65,7 @@ def save_content():
     if not story or not image_url:
         return jsonify({'error': 'Story and image URL are required'}), 400
 
-    # Save content to file or database (in this case, a text file)
+    # ذخیره‌سازی محتوا در فایل یا دیتابیس
     with open('saved_stories.txt', 'a') as f:
         f.write(f"Story: {story}\nImage: {image_url}\n\n")
 
@@ -63,6 +73,7 @@ def save_content():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
 
 
 
