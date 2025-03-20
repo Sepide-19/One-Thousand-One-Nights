@@ -5,14 +5,12 @@ from dotenv import load_dotenv
 # بارگذاری متغیرهای محیطی از فایل .env
 load_dotenv()
 app = Flask(__name__)
-
 # Set your OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route('/')
 def index():
     return render_template('index.html')
-
 @app.route('/generate', methods=['POST'])
 def generate_content():
     data = request.json
