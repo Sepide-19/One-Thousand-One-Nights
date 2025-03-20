@@ -56,5 +56,9 @@ def save_content():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)  # This will allow all origins by default
 
 
