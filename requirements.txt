@@ -3,4 +3,5 @@ openai
 render
 gunicorn
 python-dotenv
+flask-cors
 
