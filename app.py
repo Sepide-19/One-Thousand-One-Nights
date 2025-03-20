@@ -1,10 +1,15 @@
 import openai
 from flask import Flask, request, jsonify, render_template
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 
-# Set your OpenAI API key
-openai.api_key = 'YOUR_OPENAI_API_KEY'
+# Set your OpenAI API key from the .env file
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route('/')
 def index():
@@ -26,7 +31,6 @@ def generate_content():
         prompt=prompt,
         max_tokens=200
     )
-
     story = response.choices[0].text.strip()
 
     # Generate an image based on the story
@@ -56,3 +60,4 @@ def save_content():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
