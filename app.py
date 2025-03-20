@@ -1,14 +1,14 @@
 import openai
 from flask import Flask, request, jsonify, render_template
+import os
 from dotenv import load_dotenv
 import os
 
-# Load environment variables from .env file
+# بارگذاری متغیرهای محیطی از فایل .env
 load_dotenv()
-
 app = Flask(__name__)
 
-# Set your OpenAI API key from the .env file
+# Set your OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route('/')
@@ -24,14 +24,14 @@ def generate_content():
     if not emojis or not theme:
         return jsonify({'error': 'Emojis and theme are required'}), 400
 
-    # Send request to OpenAI's API for story generation
+    # Send request to OpenAI's API for story generation using the new method
     prompt = f"Generate a story with the following emojis: {emojis} and theme: {theme}"
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",  # Use the correct model
+        messages=[{"role": "user", "content": prompt}],
         max_tokens=200
     )
-    story = response.choices[0].text.strip()
+    story = response['choices'][0]['message']['content'].strip()
 
     # Generate an image based on the story
     image_response = openai.Image.create(
@@ -60,4 +60,5 @@ def save_content():
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
 
