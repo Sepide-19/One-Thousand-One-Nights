@@ -2,8 +2,6 @@ import openai
 from flask import Flask, request, jsonify, render_template
 import os
 from dotenv import load_dotenv
-import os
-
 # بارگذاری متغیرهای محیطی از فایل .env
 load_dotenv()
 app = Flask(__name__)
