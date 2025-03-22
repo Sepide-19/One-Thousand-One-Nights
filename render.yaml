@@ -3,7 +3,8 @@ services:
     name: one-thousand-one-nights
     env: python
     buildCommand: ""
-    startCommand: python app.py
+    startCommand: gunicorn app:app
+
     envVars:
       - key: OPENAI_API_KEY
         value: ${OPENAI_API_KEY}
