@@ -1,4 +1,7 @@
 
+from flask_cors import CORS
+from dotenv import load_dotenv
+from flask import Flask, request, jsonify
 import os
 import json
 import openai
@@ -82,11 +85,6 @@ if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
 
-import openai
-from flask import Flask, request, jsonify
-import os
-from dotenv import load_dotenv
-from flask_cors import CORS
 
 # بارگذاری متغیرهای محیطی از فایل .env
 load_dotenv()
@@ -96,6 +94,7 @@ CORS(app)
 
 # استفاده از کلید API OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
 
 @app.route('/generate', methods=['POST'])
 def generate_content():
@@ -130,10 +129,6 @@ def generate_content():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
-
-
-
-
-
