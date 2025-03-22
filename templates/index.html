@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>One Thousand and One Nights</title>
+</head>
+<body>
+    <h2>Enter 3 to 5 Emojis and a Theme</h2>
+    <input type="text" id="emojis" placeholder="e.g. 🐍🌙🏰">
+    <input type="text" id="theme" placeholder="e.g. Mystery">
+    <button onclick="generateStory()">Generate</button>
+
+    <h3>Story:</h3>
+    <p id="storyOutput"></p>
+    <h3>Image:</h3>
+    <img id="imageOutput" width="300" />
+
+    <script>
+        function generateStory() {
+            const emojis = document.getElementById('emojis').value;
+            const theme = document.getElementById('theme').value;
+
+            fetch('/generate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({emojis, theme})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    document.getElementById('storyOutput').innerText = data.story;
+                    document.getElementById('imageOutput').src = data.image_url;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
