@@ -6,4 +6,5 @@ services:
     startCommand: python app.py
     envVars:
       - key: OPENAI_API_KEY
-        value: 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
+        value: ${OPENAI_API_KEY}
+
