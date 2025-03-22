@@ -10,6 +10,8 @@ app = Flask(__name__)
 STORY_FILE = "data/stories.json"
 
 # تابع برای ذخیره داستان‌ها و تصاویر
+
+
 def save_story(data):
     if not os.path.exists(STORY_FILE):
         with open(STORY_FILE, "w") as f:
@@ -23,9 +25,11 @@ def save_story(data):
     with open(STORY_FILE, "w") as f:
         json.dump(all_stories, f, indent=2)
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 @app.route('/generate', methods=['POST'])
 def generate():
@@ -71,6 +75,8 @@ def generate():
         print("❌ Error:", e)
         return jsonify({"error": str(e)}), 500
 
-if __name__ == '__main__':
-    app.run(debug=True)
 
+if __name__ == '__main__':
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
