@@ -1,40 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>One Thousand and One Nights</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>One Thousand and One Nights</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
+  <div class="container">
     <h2>Enter 3 to 5 Emojis and a Theme</h2>
-    <input type="text" id="emojis" placeholder="e.g. 🐍🌙🏰">
-    <input type="text" id="theme" placeholder="e.g. Mystery">
+    <input type="text" id="emojiInput" placeholder="e.g. 🐍🌙🏰">
+    <input type="text" id="themeInput" placeholder="e.g. Mystery">
     <button onclick="generateStory()">Generate</button>
 
     <h3>Story:</h3>
     <p id="storyOutput"></p>
+
     <h3>Image:</h3>
     <img id="imageOutput" width="300" />
+  </div>
 
-    <script>
-        function generateStory() {
-            const emojis = document.getElementById('emojis').value;
-            const theme = document.getElementById('theme').value;
+  <script>
+    async function generateStory() {
+      const emojis = document.getElementById("emojiInput").value;
+      const theme = document.getElementById("themeInput").value;
 
-            fetch('/generate', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({emojis, theme})
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    document.getElementById('storyOutput').innerText = data.story;
-                    document.getElementById('imageOutput').src = data.image_url;
-                }
-            });
-        }
-    </script>
+      const response = await fetch("/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ emojis, theme }),
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+
+      document.getElementById("storyOutput").textContent = data.story;
+      document.getElementById("imageOutput").src = data.image_url;
+    }
+  </script>
 </body>
 </html>
