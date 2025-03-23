@@ -10,6 +10,10 @@ from datetime import datetime
 # بارگذاری متغیرهای محیطی از فایل .env
 load_dotenv()
 
+# تعیین مسیر پوشه‌ی پروژه و پوشه تصاویر
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+image_folder = os.path.join(BASE_DIR, "static", "images")
+
 # ساخت اپ Flask و تنظیمات
 app = Flask(__name__)
 CORS(app)
@@ -17,7 +21,7 @@ CORS(app)
 # استفاده از کلید API
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-STORY_FILE = "data/stories.json"
+STORY_FILE = os.path.join(BASE_DIR, "data", "stories.json")
 
 # تابع برای ذخیره داستان‌ها و تصاویر
 def save_story(data):
@@ -71,7 +75,6 @@ def generate():
         image_url_from_api = image_response["data"][0]["url"]
 
         # 📁 ساخت پوشه‌ی ذخیره‌سازی اگر وجود نداشت
-        image_folder = os.path.join("static", "images")
         os.makedirs(image_folder, exist_ok=True)
 
         # 📥 دانلود تصویر
