@@ -1,10 +1,11 @@
-
 from flask_cors import CORS
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify, render_template
 import os
 import json
 import openai
+import requests
+from datetime import datetime
 
 # بارگذاری متغیرهای محیطی از فایل .env
 load_dotenv()
@@ -69,6 +70,18 @@ def generate():
         )
         image_url = image_response["data"][0]["url"]
 
+        # 📥 دانلود و ذخیره‌سازی تصویر
+        image_data = requests.get(image_url).content
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        image_filename = f"image_{timestamp}.png"
+        image_path = os.path.join("static", "images", image_filename)
+
+        with open(image_path, "wb") as f:
+            f.write(image_data)
+
+        # آدرس جدید برای استفاده در فرانت‌اند
+        image_url = f"/static/images/{image_filename}"
+
         result = {"story": story, "image_url": image_url}
 
         # ذخیره داستان در فایل
@@ -89,3 +102,4 @@ def generate():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+
