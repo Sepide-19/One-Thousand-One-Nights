@@ -68,23 +68,25 @@ def generate():
             n=1,
             size="512x512"
         )
-        image_url = image_response["data"][0]["url"]
+        image_url_from_api = image_response["data"][0]["url"]
 
-        # 📥 دانلود و ذخیره‌سازی تصویر
-        image_data = requests.get(image_url).content
+        # 📁 ساخت پوشه‌ی ذخیره‌سازی اگر وجود نداشت
+        image_folder = os.path.join("static", "images")
+        os.makedirs(image_folder, exist_ok=True)
+
+        # 📥 دانلود تصویر
+        image_data = requests.get(image_url_from_api).content
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         image_filename = f"image_{timestamp}.png"
-        image_path = os.path.join("static", "images", image_filename)
+        image_path = os.path.join(image_folder, image_filename)
 
         with open(image_path, "wb") as f:
             f.write(image_data)
 
-        # آدرس جدید برای استفاده در فرانت‌اند
+        # 🔗 لینک برای استفاده در HTML
         image_url = f"/static/images/{image_filename}"
 
-        result = {"story": story, "image_url": image_url}
-
-        # ذخیره داستان در فایل
+        # ذخیره در فایل JSON
         save_story({
             "emojis": emojis,
             "theme": theme,
@@ -92,7 +94,7 @@ def generate():
             "image_url": image_url
         })
 
-        return jsonify(result)
+        return jsonify({"story": story, "image_url": image_url})
 
     except Exception as e:
         print("❌ Error:", e)
@@ -102,4 +104,5 @@ def generate():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+
 
