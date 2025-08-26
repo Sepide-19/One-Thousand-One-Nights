@@ -2,48 +2,106 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>One Thousand and One Nights</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
+<body class="bg-gray-100 font-sans">
 
-<body>
-  <div class="container">
-    <h2>Enter 3 to 5 Emojis and a Theme</h2>
-    <input type="text" id="emojiInput" placeholder="e.g. 🐍🌙🏰">
-    <input type="text" id="themeInput" placeholder="e.g. Mystery">
-    <button onclick="generateStory()">Generate</button>
+  <div class="max-w-lg mx-auto mt-10 bg-white shadow-md rounded-lg p-6">
+    <!-- Title -->
+    <h1 class="text-2xl font-bold text-center mb-2">One Thousand and One Nights</h1>
+    <p class="text-sm text-gray-600 text-center mb-6">
+      Enter 3–5 emojis and a theme, get a short story + <b>Persian miniature</b> illustration
+    </p>
 
-    <h3>Story:</h3>
-    <p id="storyOutput"></p>
+    <!-- Inputs -->
+    <div class="flex gap-2 mb-4">
+      <input id="emojiInput" type="text" placeholder="e.g. 🌙🦚🌸"
+             class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"/>
+      <input id="themeInput" type="text" placeholder="e.g. Mystery"
+             class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"/>
+    </div>
 
-    <h3>Image:</h3>
-    <img id="imageOutput" width="300" />
+    <!-- Button -->
+    <button id="goBtn"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition">
+      Generate Story
+    </button>
+
+    <!-- Error -->
+    <div id="errorBox"
+         class="hidden mt-3 bg-red-100 border border-red-300 text-red-800 text-sm rounded px-3 py-2"></div>
+
+    <!-- Story -->
+    <div id="storyBox"
+         class="hidden mt-6 bg-blue-50 text-gray-800 p-4 rounded text-sm leading-relaxed"></div>
+
+    <!-- Image -->
+    <div class="mt-6">
+      <img id="imageOutput" src="" alt="" class="hidden rounded shadow"/>
+    </div>
   </div>
 
   <script>
-    async function generateStory() {
-      const emojis = document.getElementById("emojiInput").value;
-      const theme = document.getElementById("themeInput").value;
+    const emojiInput = document.getElementById('emojiInput');
+    const themeInput = document.getElementById('themeInput');
+    const goBtn = document.getElementById('goBtn');
+    const storyBox = document.getElementById('storyBox');
+    const img = document.getElementById('imageOutput');
+    const errorBox = document.getElementById('errorBox');
 
-      const response = await fetch("/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ emojis, theme }),
-      });
+    function showError(msg){
+      errorBox.textContent = msg;
+      errorBox.classList.remove('hidden');
+    }
 
-      const data = await response.json();
+    async function generate() {
+      errorBox.classList.add('hidden');
+      storyBox.classList.add('hidden');
+      img.classList.add('hidden');
 
-      if (data.error) {
-        alert(data.error);
+      const emojis = emojiInput.value.trim();
+      const theme  = themeInput.value.trim();
+
+      if (!emojis || !theme) {
+        showError('Please enter emojis and a theme.');
         return;
       }
 
-      document.getElementById("storyOutput").textContent = data.story;
-      document.getElementById("imageOutput").src = data.image_url;
+      try {
+        goBtn.disabled = true;
+        goBtn.textContent = 'Generating…';
+
+        const res = await fetch('/generate', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ emojis, theme })
+        });
+        const data = await res.json();
+
+        if (!res.ok || data.error) throw new Error(data.error || 'Server error');
+
+        // show ~4–6 sentence story (as returned)
+        storyBox.textContent = (data.story || '').trim();
+        storyBox.classList.remove('hidden');
+
+        img.src = data.image_url || '';
+        if (img.src) img.classList.remove('hidden');
+
+      } catch (err) {
+        showError(err.message || 'Something went wrong.');
+      } finally {
+        goBtn.disabled = false;
+        goBtn.textContent = 'Generate Story';
+      }
     }
+
+    goBtn.addEventListener('click', generate);
+    [emojiInput, themeInput].forEach(el =>
+      el.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); generate(); }})
+    );
   </script>
 </body>
 </html>
+
