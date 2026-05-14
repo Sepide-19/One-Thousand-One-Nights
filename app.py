@@ -1,120 +1,224 @@
-from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from dotenv import load_dotenv
+from flask import Flask, request, jsonify, render_template
 import os
 import json
+import base64
+from datetime import datetime
 
+# ---------- load environment ----------
 load_dotenv()
 
-app = Flask(__name__, template_folder="templates", static_folder="static")
+# ---------- flask setup ----------
+app = Flask(
+    __name__,
+    template_folder="templates",
+    static_folder="static"
+)
+
 CORS(app)
 
+# ---------- config ----------
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 STORY_FILE = "data/stories.json"
 
 
+# ---------- storage helpers ----------
+def ensure_data_folder():
+    if not os.path.exists("data"):
+        os.makedirs("data")
+
+
 def ensure_story_file():
-    os.makedirs("data", exist_ok=True)
+    ensure_data_folder()
+
     if not os.path.exists(STORY_FILE):
         with open(STORY_FILE, "w", encoding="utf-8") as f:
             json.dump([], f, ensure_ascii=False, indent=2)
 
 
-def save_story(entry):
+def load_stories():
     ensure_story_file()
+
     try:
         with open(STORY_FILE, "r", encoding="utf-8") as f:
             stories = json.load(f)
-            if not isinstance(stories, list):
-                stories = []
-    except Exception:
-        stories = []
 
+        if not isinstance(stories, list):
+            return []
+
+        return stories
+
+    except Exception:
+        return []
+
+
+def save_story(entry):
+    stories = load_stories()
     stories.append(entry)
 
     with open(STORY_FILE, "w", encoding="utf-8") as f:
         json.dump(stories, f, ensure_ascii=False, indent=2)
 
 
-@app.route("/")
+# ---------- prompt helpers ----------
+def build_story_prompt(emojis, theme):
+    return (
+        "Write a short, self-contained English story, about 4–6 sentences. "
+        "Style: a modern, global echo of One Thousand and One Nights where any person can be the storyteller. "
+        "Do NOT mention Scheherazade or a king. "
+        "Begin the first sentence with 'Once' or 'Once upon a time'. "
+        "End with a satisfying, closed resolution. "
+        "No cliffhanger. No 'to be continued'. "
+        "Keep language vivid but simple; contemporary tone with a touch of wonder. "
+        f"Inspiration emojis: {emojis}. Theme: {theme}."
+    )
+
+
+def build_image_prompt(emojis, theme):
+    return (
+        "Create a beautiful illustration in the style of Persian miniature "
+        "and traditional Iranian painting. Use delicate lines, ornamental patterns, "
+        "gold accents, harmonious colors, poetic atmosphere, magical composition, "
+        "flat decorative perspective, elegant figures, and intricate borders. "
+        f"Reflect these emojis and theme. Emojis: {emojis}; Theme: {theme}."
+    )
+
+
+def clean_story(story):
+    if not story:
+        return ""
+
+    story = story.strip()
+
+    if story and not story.lower().startswith(("once ", "once upon a time")):
+        story = "Once, " + story[0].lower() + story[1:]
+
+    if story and story[-1] not in ".!?":
+        story += "."
+
+    return story
+
+
+# ---------- openai helpers ----------
+def get_openai_client():
+    if not OPENAI_API_KEY:
+        raise RuntimeError("OPENAI_API_KEY is missing in Render Environment Variables")
+
+    from openai import OpenAI
+    return OpenAI(api_key=OPENAI_API_KEY)
+
+
+def generate_story_with_openai(client, emojis, theme):
+    story_prompt = build_story_prompt(emojis, theme)
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a concise, imaginative writer. "
+                    "Your stories always begin with 'Once' or 'Once upon a time' "
+                    "and conclude with a clear, satisfying ending."
+                )
+            },
+            {
+                "role": "user",
+                "content": story_prompt
+            }
+        ],
+        temperature=0.9,
+        max_tokens=400
+    )
+
+    story = response.choices[0].message.content
+    return clean_story(story)
+
+
+def generate_image_with_openai(client, emojis, theme):
+    image_prompt = build_image_prompt(emojis, theme)
+
+    response = client.images.generate(
+        model="gpt-image-1",
+        prompt=image_prompt,
+        size="1024x1024",
+        n=1
+    )
+
+    image_base64 = response.data[0].b64_json
+
+    if not image_base64:
+        raise RuntimeError("Image generation returned no image data")
+
+    return "data:image/png;base64," + image_base64
+
+
+# ---------- routes ----------
+@app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
 
 
-@app.route("/health")
+@app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "ok"})
+    return jsonify({
+        "status": "ok",
+        "openai_key_loaded": bool(OPENAI_API_KEY)
+    })
+
+
+@app.route("/stories", methods=["GET"])
+def stories():
+    return jsonify(load_stories())
 
 
 @app.route("/generate", methods=["POST"])
 def generate():
+    data = request.get_json(silent=True) or request.form.to_dict()
+
+    emojis = (data.get("emojis") or "").strip()
+    theme = (data.get("theme") or "").strip()
+
+    if not emojis or not theme:
+        return jsonify({
+            "error": "Emojis and theme are required"
+        }), 400
+
     try:
-        from openai import OpenAI
+        client = get_openai_client()
 
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            return jsonify({"error": "OPENAI_API_KEY is missing in Render Environment"}), 500
+        story = generate_story_with_openai(client, emojis, theme)
+        image_url = generate_image_with_openai(client, emojis, theme)
 
-        client = OpenAI(api_key=api_key)
-
-        data = request.get_json(silent=True) or request.form.to_dict()
-        emojis = (data.get("emojis") or "").strip()
-        theme = (data.get("theme") or "").strip()
-
-        if not emojis or not theme:
-            return jsonify({"error": "Emojis and theme are required"}), 400
-
-        story_prompt = (
-            "Write a short magical story in English, 4 to 6 sentences. "
-            "Inspired by One Thousand and One Nights. "
-            "Begin with 'Once upon a time'. "
-            "End with a complete satisfying ending. "
-            f"Theme: {theme}. Emojis: {emojis}."
-        )
-
-        story_response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are a poetic storyteller."},
-                {"role": "user", "content": story_prompt}
-            ],
-            temperature=0.9,
-            max_tokens=350
-        )
-
-        story = story_response.choices[0].message.content.strip()
-
-        image_prompt = (
-            "Persian miniature painting, traditional Iranian miniature art, "
-            "delicate lines, gold accents, ornamental patterns, magical atmosphere. "
-            f"Theme: {theme}. Emojis: {emojis}."
-        )
-
-        image_response = client.images.generate(
-            model="gpt-image-1",
-            prompt=image_prompt,
-            size="1024x1024",
-            n=1
-        )
-
-        image_url = "data:image/png;base64," + image_response.data[0].b64_json
+        result = {
+            "story": story,
+            "image_url": image_url
+        }
 
         save_story({
+            "created_at": datetime.utcnow().isoformat() + "Z",
             "emojis": emojis,
             "theme": theme,
             "story": story,
             "image_url": image_url
         })
 
-        return jsonify({
-            "story": story,
-            "image_url": image_url
-        })
+        return jsonify(result)
 
     except Exception as e:
-        print("ERROR /generate:", repr(e))
-        return jsonify({"error": str(e)}), 500
+        print("❌ /generate error:", repr(e))
+        return jsonify({
+            "error": str(e)
+        }), 500
 
 
+# ---------- run ----------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+
+    app.run(
+        host="0.0.0.0",
+        port=port,
+        debug=False
+    )
