@@ -19,10 +19,6 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 STORY_FILE = "data/stories.json"
 
 
-# ----------------------------
-# storage helpers
-# ----------------------------
-
 def ensure_data_folder():
     if not os.path.exists("data"):
         os.makedirs("data")
@@ -60,10 +56,6 @@ def save_story(entry):
         json.dump(stories, f, ensure_ascii=False, indent=2)
 
 
-# ----------------------------
-# prompts
-# ----------------------------
-
 def build_story_prompt(emojis, theme):
     return (
         "Write a short, self-contained English story, about 4–6 sentences. "
@@ -79,35 +71,37 @@ def build_story_prompt(emojis, theme):
 
 def build_image_prompt(emojis, theme):
     return f"""
-Create an intricate Persian manuscript-style miniature inspired by
-Shahnameh illuminations, Safavid painting, mystical Iranian manuscript arts,
-and antique Persian illustrated books.
+Create a highly detailed Persian miniature painting inspired by
+Kamāl al-Dīn Behzād, Safavid manuscript painting,
+Shahnameh illustrations, and illuminated Persian book arts.
 
-The composition must subtly incorporate these symbols and themes:
+The artwork should subtly incorporate these symbols:
 {emojis}
 
 Theme:
 {theme}
 
-Important aesthetic directions:
+Visual directions:
 
-- The image should feel like a lost illuminated manuscript page.
-- Maintain a rich decorative border and framed composition.
-- Use dense layered ornamentation, miniature textures,
-gold leaf atmosphere, floral motifs, clouds, symbolic creatures,
-architectural fragments, and intertwined visual storytelling.
-- The emoji references should appear symbolically and poetically,
-not literally or cartoonishly.
-- Avoid cartoon expressions, exaggerated smiling faces,
-children-book aesthetics, or playful illustration style.
-- Avoid modern digital-art character design.
-- Faces should feel solemn, mysterious, painterly, and timeless.
-- The scene should feel mystical, dreamlike, ceremonial, and ancient.
-- Inspired by Persian epic manuscripts rather than animation.
-- Use aged lapis blue, oxidized gold, parchment beige,
-dark turquoise, faded crimson, and smoky shadows.
-- Keep the image visually dense and immersive.
-- Preserve ambiguity and artistic interpretation.
+- Rich crowded composition with many intertwined visual elements.
+- Use vibrant jewel-tone colors:
+deep turquoise, Persian blue, emerald green,
+crimson red, saffron gold, copper, lapis lazuli.
+- The page should feel alive, intricate, ceremonial, theatrical, and ornate.
+- Include layered decorative details, miniature architecture,
+Persian gardens, textiles, clouds, floral motifs,
+animals, symbolic figures, and storytelling fragments.
+- Preserve a manuscript-page frame and ornamental borders.
+- Faces should feel elegant and expressive,
+not cartoonish and not photorealistic.
+- Avoid modern digital illustration aesthetics.
+- Avoid minimalist empty compositions.
+- The scene should feel dense, warm, magical, and human.
+- Inspired by Behzād's crowded spatial compositions and rhythmic storytelling.
+- The emoji references should appear poetically inside the scene,
+not as literal emoji illustrations.
+- Painterly texture, aged pigments, gold illumination,
+Persian manuscript atmosphere.
 """
 
 
@@ -125,10 +119,6 @@ def clean_story(story):
 
     return story
 
-
-# ----------------------------
-# openai helpers
-# ----------------------------
 
 def get_openai_client():
 
@@ -190,10 +180,6 @@ def generate_image_with_openai(client, emojis, theme):
 
     return f"data:image/png;base64,{image_base64}"
 
-
-# ----------------------------
-# routes
-# ----------------------------
 
 @app.route("/", methods=["GET"])
 def index():
@@ -265,10 +251,6 @@ def generate():
             "error": str(e)
         }), 500
 
-
-# ----------------------------
-# run
-# ----------------------------
 
 if __name__ == "__main__":
 
