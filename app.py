@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify, render_template
 import os
 import json
-import base64
 from datetime import datetime
 
 # ---------- load environment ----------
@@ -140,18 +139,19 @@ def generate_image_with_openai(client, emojis, theme):
     image_prompt = build_image_prompt(emojis, theme)
 
     response = client.images.generate(
-        model="gpt-image-1",
+        model="dall-e-3",
         prompt=image_prompt,
         size="1024x1024",
+        quality="standard",
         n=1
     )
 
-    image_base64 = response.data[0].b64_json
+    image_url = response.data[0].url
 
-    if not image_base64:
-        raise RuntimeError("Image generation returned no image data")
+    if not image_url:
+        raise RuntimeError("Image generation returned no image URL")
 
-    return "data:image/png;base64," + image_base64
+    return image_url
 
 
 # ---------- routes ----------
