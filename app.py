@@ -72,77 +72,108 @@ def build_story_prompt(emojis, theme):
 def build_image_prompt(emojis, theme):
     return (
         f"""
-Create an intricate Persian manuscript-style painting inspired by
-Safavid miniature art, Shahnameh illustrations,
-and the compositional atmosphere of Kamāl al-Dīn Behzād.
+Create a museum-quality contemporary Persian miniature painting
+inspired by illuminated Iranian manuscripts and Shahnameh visual culture.
 
-The result should feel balanced BETWEEN abstraction and recognizable narrative.
+The artwork should feel genuinely artistic and curatorial —
+like a contemporary artwork shown at a biennale or major museum exhibition,
+NOT fantasy illustration, NOT cartoon, NOT decorative AI art.
 
-Important:
-The image should NOT become:
-- too abstract and psychedelic
-- too modern or digital
-- too clean and figurative
-- too cartoonish
-- too symbolic-only
+The image should balance:
+- narrative clarity
+- painterly abstraction
+- emotional atmosphere
+- ornamental density
+- sophisticated color relationships
 
-Target aesthetic:
-A poetic Persian miniature with semi-recognizable figures and dense ornamentation.
+Visual language:
+- layered miniature composition
+- dense ornamental space
+- poetic visual storytelling
+- fragmented narrative scenes
+- symbolic architecture and gardens
+- manuscript borders and illuminated framing
+- flowing Persian cloud motifs
+- intertwined humans, animals, plants, textiles
+- subtle visual chaos and movement
+- asymmetrical composition
+- tactile painterly surfaces
 
-Composition:
-- crowded manuscript-page composition
-- layered storytelling scenes
-- intertwined humans, animals, plants, clouds, architecture
-- intricate Persian borders and illuminated framing
-- decorative density across the whole image
-- visual richness and movement
-- miniature-style flat spatial perspective
-- subtle ambiguity and painterly abstraction
-- detailed textures and ornamental rhythm
+Very important:
+Each generated image should feel visually UNIQUE,
+with changing compositions, changing palettes,
+changing spatial rhythms, and changing emotional tone.
+
+Do NOT repeat the same dark blue palette every time.
+
+Color direction:
+Use richer and more adventurous Persian miniature palettes:
+- lapis blue
+- turquoise
+- emerald green
+- deep crimson
+- saffron yellow
+- rose pink
+- burnt orange
+- copper
+- gold leaf tones
+- ivory
+- smoky indigo
+- pomegranate red
+
+Colors should feel luminous, layered, mineral, and painterly —
+not flat or monochromatic.
+
+Some images may be:
+- warmer
+- greener
+- more golden
+- more turquoise
+- dusk-toned
+- rose-toned
+- jewel-toned
+
+The palette should evolve naturally from the mood of the story.
 
 Figures:
-- figures should be partially stylized and slightly abstracted
-- faces soft, expressive, but not hyper-detailed
-- anatomy miniature-like rather than realistic
-- figures integrated into patterns and environment
-- emotional storytelling without looking like cartoons
+- semi-recognizable figures
+- understated expressions
+- elongated miniature-like anatomy
+- poetic gestures
+- partially absorbed into texture and ornament
+- no cartoon smiles
+- no theatrical posing
 
-Color palette:
-- rich lapis blue
-- glowing turquoise
-- crimson red
-- malachite green
-- saffron yellow
-- burnished gold
-- copper orange
-- jewel-toned Persian manuscript colors
-- strong but elegant contrast
-- luminous mineral pigment appearance
+Texture:
+- layered pigments
+- aged manuscript texture
+- delicate brushwork
+- hand-painted imperfections
+- subtle grain
+- visible painterly depth
 
-Texture and mood:
-- aged illuminated manuscript
-- handmade brush texture
-- layered pigment feel
-- ornamental complexity
-- mystical and poetic atmosphere
-- visually immersive and dense
-
-Style balance:
-50% authentic Persian miniature narrative painting
-50% poetic ornamental abstraction
+Mood:
+- contemplative
+- mystical
+- emotionally intelligent
+- poetic
+- culturally grounded
+- visually immersive
 
 Avoid:
-- psychedelic neon abstraction
-- cartoon style
-- Disney expressions
-- modern fantasy concept art
-- minimalist empty scenes
+- cartoon aesthetics
+- children's-book illustration
 - obvious AI symmetry
-- photographic realism
-- clean vector illustration
-- isolated centered portrait compositions
+- fantasy concept art
+- poster design
+- psychedelic neon abstraction
+- repetitive compositions
+- monochromatic blue-only palettes
+- hyper-clean rendering
+- photorealism
 
-The emojis and theme should appear symbolically and naturally woven into the scene.
+The emojis and theme should appear subtly and symbolically,
+woven naturally into the manuscript world rather than illustrated literally.
 
 Emojis: {emojis}
 Theme: {theme}
