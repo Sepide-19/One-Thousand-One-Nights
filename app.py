@@ -7,12 +7,21 @@ from datetime import datetime
 
 load_dotenv()
 
-app = Flask(__name__, template_folder="templates", static_folder="static")
+app = Flask(
+    __name__,
+    template_folder="templates",
+    static_folder="static"
+)
+
 CORS(app)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 STORY_FILE = "data/stories.json"
 
+
+# ----------------------------
+# storage helpers
+# ----------------------------
 
 def ensure_data_folder():
     if not os.path.exists("data"):
@@ -21,6 +30,7 @@ def ensure_data_folder():
 
 def ensure_story_file():
     ensure_data_folder()
+
     if not os.path.exists(STORY_FILE):
         with open(STORY_FILE, "w", encoding="utf-8") as f:
             json.dump([], f, ensure_ascii=False, indent=2)
@@ -28,10 +38,16 @@ def ensure_story_file():
 
 def load_stories():
     ensure_story_file()
+
     try:
         with open(STORY_FILE, "r", encoding="utf-8") as f:
             stories = json.load(f)
-        return stories if isinstance(stories, list) else []
+
+        if isinstance(stories, list):
+            return stories
+
+        return []
+
     except Exception:
         return []
 
@@ -39,9 +55,14 @@ def load_stories():
 def save_story(entry):
     stories = load_stories()
     stories.append(entry)
+
     with open(STORY_FILE, "w", encoding="utf-8") as f:
         json.dump(stories, f, ensure_ascii=False, indent=2)
 
+
+# ----------------------------
+# prompts
+# ----------------------------
 
 def build_story_prompt(emojis, theme):
     return (
@@ -57,41 +78,30 @@ def build_story_prompt(emojis, theme):
 
 
 def build_image_prompt(emojis, theme):
-    return (
-        "Create a richly detailed Persian manuscript-style illustration inspired by "
-        "Shahnameh miniatures, illuminated Iranian manuscripts, and epic Persian painting. "
+    return f"""
+Create a dense narrative Persian miniature inspired by Shahnameh manuscripts,
+Safavid paintings, illuminated Iranian miniatures, and mystical Persian book arts.
 
-        "The artwork should be visually dense, layered, ornate, and full of intricate details. "
-        "Use crowded compositions, decorative borders, symbolic creatures, celestial forms, "
-        "mythical motifs, floral arabesques, gold illumination, complex textures, "
-        "miniature-style spatial flattening, and poetic visual storytelling. "
+The image must clearly incorporate these emoji symbols and themes:
+{emojis}
 
-        "Avoid clean minimalist portraits or empty compositions. "
-        "The image should feel alive, mysterious, ceremonial, excessive, and visually immersive. "
+Theme:
+{theme}
 
-        "Blend traditional Persian miniature aesthetics with subtle surrealism and dreamlike symbolism. "
-        "Include ornamental chaos, overlapping decorative elements, handwritten manuscript energy, "
-        "and the feeling of an ancient illuminated page discovered in a forgotten archive. "
-
-        "Use deep blues, lapis lazuli tones, gold leaf textures, aged paper feeling, "
-        "intricate linework, and elaborate framing. "
-
-        "The artwork should resemble a fragmented illuminated Shahnameh manuscript page "
-        "rediscovered from a lost archive. "
-        "Include asymmetry, layered visual storytelling, marginalia-like details, hidden creatures, "
-        "floating ornaments, miniature crowds, symbolic architecture, and poetic visual noise. "
-
-        "Avoid clean symmetry or polished portrait photography aesthetics. "
-        "Avoid distorted AI faces, photorealism, or modern fantasy game aesthetics. "
-        "Faces should resemble simplified painted figures from Persian manuscripts. "
-        "Use layered miniature storytelling scenes instead of a single centered portrait. "
-        "Maintain clear miniature-style figures and readable narrative scenes within the ornamental complexity. "
-
-        "The emojis should subtly influence symbols, creatures, gestures, ornaments, "
-        "and narrative details throughout the manuscript scene rather than appearing as literal modern icons. "
-
-        f"Emojis: {emojis}. Theme: {theme}."
-    )
+Important:
+- The emoji symbols should visibly appear as transformed narrative elements,
+animals, objects, costumes, gestures, architecture, or decorative motifs.
+- The composition should feel crowded, layered, ornate, symbolic, and alive.
+- Include many intertwined figures, creatures, floral patterns, clouds,
+gold textures, manuscript borders, and miniature storytelling details.
+- Avoid modern realism.
+- Avoid empty portrait compositions.
+- Preserve a framed manuscript-page composition.
+- Make the scene feel mythic, theatrical, dreamlike, and story-driven.
+- Use deep lapis blue, aged gold, turquoise, faded red, parchment textures.
+- Inspired by Persian epic manuscripts and illuminated Shahnameh pages,
+but interpreted in a contemporary artistic way.
+"""
 
 
 def clean_story(story):
@@ -109,24 +119,33 @@ def clean_story(story):
     return story
 
 
+# ----------------------------
+# openai helpers
+# ----------------------------
+
 def get_openai_client():
     if not OPENAI_API_KEY:
-        raise RuntimeError("OPENAI_API_KEY is missing")
+        raise RuntimeError(
+            "OPENAI_API_KEY is missing in Render Environment Variables"
+        )
 
     from openai import OpenAI
+
     return OpenAI(api_key=OPENAI_API_KEY)
 
 
 def generate_story_with_openai(client, emojis, theme):
+
     response = client.chat.completions.create(
         model="gpt-4o-mini",
+
         messages=[
             {
                 "role": "system",
                 "content": (
-                    "You are a concise, imaginative writer. "
-                    "Your stories always begin with 'Once' or 'Once upon a time' "
-                    "and conclude with a clear ending."
+                    "You are a concise imaginative writer. "
+                    "Your stories always begin with 'Once' or "
+                    "'Once upon a time' and end clearly."
                 )
             },
             {
@@ -134,29 +153,39 @@ def generate_story_with_openai(client, emojis, theme):
                 "content": build_story_prompt(emojis, theme)
             }
         ],
-        temperature=0.9,
+
+        temperature=0.95,
         max_tokens=400
     )
 
-    return clean_story(response.choices[0].message.content)
+    story = response.choices[0].message.content
+
+    return clean_story(story)
 
 
 def generate_image_with_openai(client, emojis, theme):
+
+    prompt = build_image_prompt(emojis, theme)
+
     response = client.images.generate(
-        model="gpt-image-1-mini",
-        prompt=build_image_prompt(emojis, theme),
+        model="gpt-image-1",
+        prompt=prompt,
         size="1024x1024",
-        quality="low",
+        quality="medium",
         n=1
     )
 
     image_base64 = response.data[0].b64_json
 
     if not image_base64:
-        raise RuntimeError("Image generation returned no image data")
+        raise RuntimeError("Image generation failed")
 
-    return "data:image/png;base64," + image_base64
+    return f"data:image/png;base64,{image_base64}"
 
+
+# ----------------------------
+# routes
+# ----------------------------
 
 @app.route("/", methods=["GET"])
 def index():
@@ -178,6 +207,7 @@ def stories():
 
 @app.route("/generate", methods=["POST"])
 def generate():
+
     data = request.get_json(silent=True) or request.form.to_dict()
 
     emojis = (data.get("emojis") or "").strip()
@@ -189,10 +219,25 @@ def generate():
         }), 400
 
     try:
+
         client = get_openai_client()
 
-        story = generate_story_with_openai(client, emojis, theme)
-        image_url = generate_image_with_openai(client, emojis, theme)
+        story = generate_story_with_openai(
+            client,
+            emojis,
+            theme
+        )
+
+        image_url = generate_image_with_openai(
+            client,
+            emojis,
+            theme
+        )
+
+        result = {
+            "story": story,
+            "image_url": image_url
+        }
 
         save_story({
             "created_at": datetime.utcnow().isoformat() + "Z",
@@ -202,19 +247,23 @@ def generate():
             "image_url": image_url
         })
 
-        return jsonify({
-            "story": story,
-            "image_url": image_url
-        })
+        return jsonify(result)
 
     except Exception as e:
+
         print("❌ /generate error:", repr(e))
+
         return jsonify({
             "error": str(e)
         }), 500
 
 
+# ----------------------------
+# run
+# ----------------------------
+
 if __name__ == "__main__":
+
     port = int(os.environ.get("PORT", 5000))
 
     app.run(
