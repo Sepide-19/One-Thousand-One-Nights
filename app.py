@@ -58,11 +58,39 @@ def build_story_prompt(emojis, theme):
 
 def build_image_prompt(emojis, theme):
     return (
-        "Create a beautiful illustration in the style of Persian miniature "
-        "and traditional Iranian painting. Use delicate lines, ornamental patterns, "
-        "gold accents, harmonious colors, poetic atmosphere, magical composition, "
-        "flat decorative perspective, elegant figures, and intricate borders. "
-        f"Reflect these emojis and theme. Emojis: {emojis}; Theme: {theme}."
+        "Create a richly detailed Persian manuscript-style illustration inspired by "
+        "Shahnameh miniatures, illuminated Iranian manuscripts, and epic Persian painting. "
+
+        "The artwork should be visually dense, layered, ornate, and full of intricate details. "
+        "Use crowded compositions, decorative borders, symbolic creatures, celestial forms, "
+        "mythical motifs, floral arabesques, gold illumination, complex textures, "
+        "miniature-style spatial flattening, and poetic visual storytelling. "
+
+        "Avoid clean minimalist portraits or empty compositions. "
+        "The image should feel alive, mysterious, ceremonial, excessive, and visually immersive. "
+
+        "Blend traditional Persian miniature aesthetics with subtle surrealism and dreamlike symbolism. "
+        "Include ornamental chaos, overlapping decorative elements, handwritten manuscript energy, "
+        "and the feeling of an ancient illuminated page discovered in a forgotten archive. "
+
+        "Use deep blues, lapis lazuli tones, gold leaf textures, aged paper feeling, "
+        "intricate linework, and elaborate framing. "
+
+        "The artwork should resemble a fragmented illuminated Shahnameh manuscript page "
+        "rediscovered from a lost archive. "
+        "Include asymmetry, layered visual storytelling, marginalia-like details, hidden creatures, "
+        "floating ornaments, miniature crowds, symbolic architecture, and poetic visual noise. "
+
+        "Avoid clean symmetry or polished portrait photography aesthetics. "
+        "Avoid distorted AI faces, photorealism, or modern fantasy game aesthetics. "
+        "Faces should resemble simplified painted figures from Persian manuscripts. "
+        "Use layered miniature storytelling scenes instead of a single centered portrait. "
+        "Maintain clear miniature-style figures and readable narrative scenes within the ornamental complexity. "
+
+        "The emojis should subtly influence symbols, creatures, gestures, ornaments, "
+        "and narrative details throughout the manuscript scene rather than appearing as literal modern icons. "
+
+        f"Emojis: {emojis}. Theme: {theme}."
     )
 
 
@@ -83,7 +111,7 @@ def clean_story(story):
 
 def get_openai_client():
     if not OPENAI_API_KEY:
-        raise RuntimeError("OPENAI_API_KEY is missing in Render Environment Variables")
+        raise RuntimeError("OPENAI_API_KEY is missing")
 
     from openai import OpenAI
     return OpenAI(api_key=OPENAI_API_KEY)
@@ -98,7 +126,7 @@ def generate_story_with_openai(client, emojis, theme):
                 "content": (
                     "You are a concise, imaginative writer. "
                     "Your stories always begin with 'Once' or 'Once upon a time' "
-                    "and conclude with a clear, satisfying ending."
+                    "and conclude with a clear ending."
                 )
             },
             {
@@ -156,7 +184,9 @@ def generate():
     theme = (data.get("theme") or "").strip()
 
     if not emojis or not theme:
-        return jsonify({"error": "Emojis and theme are required"}), 400
+        return jsonify({
+            "error": "Emojis and theme are required"
+        }), 400
 
     try:
         client = get_openai_client()
@@ -179,9 +209,16 @@ def generate():
 
     except Exception as e:
         print("❌ /generate error:", repr(e))
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "error": str(e)
+        }), 500
 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+
+    app.run(
+        host="0.0.0.0",
+        port=port,
+        debug=False
+    )
