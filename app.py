@@ -76,6 +76,13 @@ def build_image_prompt(emojis, theme):
         "Use deep blues, lapis lazuli tones, gold leaf textures, aged paper feeling, "
         "intricate linework, and elaborate framing. "
 
+        "Use a richer and more varied Persian manuscript palette with luminous lapis blue, "
+        "turquoise, emerald green, cinnabar red, saffron orange, warm gold, ivory, and deep ultramarine. "
+        "Avoid monochromatic blue-and-gold dominance. "
+        "Distribute color accents across the composition like natural mineral pigments in illuminated manuscripts. "
+        "Colors should feel layered, aged, painterly, mineral-based, and slightly muted — "
+        "not neon, not cartoonish, not digitally saturated. "
+
         "The artwork should resemble a fragmented illuminated Shahnameh manuscript page "
         "rediscovered from a lost archive. "
         "Include asymmetry, layered visual storytelling, marginalia-like details, hidden creatures, "
@@ -86,6 +93,9 @@ def build_image_prompt(emojis, theme):
         "Faces should resemble simplified painted figures from Persian manuscripts. "
         "Use layered miniature storytelling scenes instead of a single centered portrait. "
         "Maintain clear miniature-style figures and readable narrative scenes within the ornamental complexity. "
+
+        "The image should feel like a rare museum-quality illuminated Persian manuscript page, "
+        "curated for a contemporary art exhibition. "
 
         f"Emojis: {emojis}. Theme: {theme}."
     )
