@@ -71,37 +71,36 @@ def build_story_prompt(emojis, theme):
 
 def build_image_prompt(emojis, theme):
     return f"""
-Create a highly detailed Persian miniature painting inspired by
-Kamāl al-Dīn Behzād, Safavid manuscript painting,
-Shahnameh illustrations, and illuminated Persian book arts.
+Create an intricate Persian manuscript-style miniature inspired by
+Kamāl al-Dīn Behzād, Shahnameh illuminations,
+Safavid manuscript painting, and antique Persian illustrated books.
 
-The artwork should subtly incorporate these symbols:
+The composition must subtly incorporate these symbols and themes:
 {emojis}
 
 Theme:
 {theme}
 
-Visual directions:
+Important aesthetic directions:
 
-- Rich crowded composition with many intertwined visual elements.
-- Use vibrant jewel-tone colors:
-deep turquoise, Persian blue, emerald green,
-crimson red, saffron gold, copper, lapis lazuli.
-- The page should feel alive, intricate, ceremonial, theatrical, and ornate.
-- Include layered decorative details, miniature architecture,
-Persian gardens, textiles, clouds, floral motifs,
-animals, symbolic figures, and storytelling fragments.
-- Preserve a manuscript-page frame and ornamental borders.
-- Faces should feel elegant and expressive,
-not cartoonish and not photorealistic.
+- The image should feel like a lost illuminated manuscript page.
+- Maintain a rich decorative border and framed composition.
+- Use dense layered ornamentation, miniature textures,
+gold illumination, floral motifs, clouds,
+symbolic creatures, architecture, and intertwined forms.
+- The emoji references should appear symbolically and poetically,
+not literally or cartoonishly.
+- Avoid obvious narrative illustration.
+- Avoid smiling cartoon faces and playful character design.
 - Avoid modern digital illustration aesthetics.
-- Avoid minimalist empty compositions.
-- The scene should feel dense, warm, magical, and human.
-- Inspired by Behzād's crowded spatial compositions and rhythmic storytelling.
-- The emoji references should appear poetically inside the scene,
-not as literal emoji illustrations.
-- Painterly texture, aged pigments, gold illumination,
-Persian manuscript atmosphere.
+- Faces should feel solemn, mysterious, painterly, and timeless.
+- The scene should feel ancient, ceremonial, dreamlike, and immersive.
+- Preserve ambiguity and artistic interpretation.
+- Use rich Persian miniature colors:
+lapis blue, turquoise, emerald green,
+deep crimson, saffron gold, parchment beige.
+- Keep the composition crowded, intricate, and visually layered.
+- Inspired by museum-quality Persian manuscript paintings.
 """
 
 
@@ -121,22 +120,18 @@ def clean_story(story):
 
 
 def get_openai_client():
-
     if not OPENAI_API_KEY:
         raise RuntimeError(
             "OPENAI_API_KEY is missing in Render Environment Variables"
         )
 
     from openai import OpenAI
-
     return OpenAI(api_key=OPENAI_API_KEY)
 
 
 def generate_story_with_openai(client, emojis, theme):
-
     response = client.chat.completions.create(
         model="gpt-4o-mini",
-
         messages=[
             {
                 "role": "system",
@@ -151,18 +146,15 @@ def generate_story_with_openai(client, emojis, theme):
                 "content": build_story_prompt(emojis, theme)
             }
         ],
-
         temperature=0.95,
         max_tokens=400
     )
 
     story = response.choices[0].message.content
-
     return clean_story(story)
 
 
 def generate_image_with_openai(client, emojis, theme):
-
     prompt = build_image_prompt(emojis, theme)
 
     response = client.images.generate(
@@ -201,7 +193,6 @@ def stories():
 
 @app.route("/generate", methods=["POST"])
 def generate():
-
     data = request.get_json(silent=True) or request.form.to_dict()
 
     emojis = (data.get("emojis") or "").strip()
@@ -213,7 +204,6 @@ def generate():
         }), 400
 
     try:
-
         client = get_openai_client()
 
         story = generate_story_with_openai(
@@ -244,7 +234,6 @@ def generate():
         return jsonify(result)
 
     except Exception as e:
-
         print("❌ /generate error:", repr(e))
 
         return jsonify({
@@ -253,7 +242,6 @@ def generate():
 
 
 if __name__ == "__main__":
-
     port = int(os.environ.get("PORT", 5000))
 
     app.run(
