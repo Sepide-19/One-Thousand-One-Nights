@@ -70,38 +70,84 @@ def build_story_prompt(emojis, theme):
 
 
 def build_image_prompt(emojis, theme):
-    return f"""
-Create an intricate Persian manuscript-style miniature inspired by
-Kamāl al-Dīn Behzād, Shahnameh illuminations,
-Safavid manuscript painting, and antique Persian illustrated books.
+    return (
+        f"""
+Create an intricate Persian manuscript-style painting inspired by
+Safavid miniature art, Shahnameh illustrations,
+and the compositional atmosphere of Kamāl al-Dīn Behzād.
 
-The composition must subtly incorporate these symbols and themes:
-{emojis}
+The result should feel balanced BETWEEN abstraction and recognizable narrative.
 
-Theme:
-{theme}
+Important:
+The image should NOT become:
+- too abstract and psychedelic
+- too modern or digital
+- too clean and figurative
+- too cartoonish
+- too symbolic-only
 
-Important aesthetic directions:
+Target aesthetic:
+A poetic Persian miniature with semi-recognizable figures and dense ornamentation.
 
-- The image should feel like a lost illuminated manuscript page.
-- Maintain a rich decorative border and framed composition.
-- Use dense layered ornamentation, miniature textures,
-gold illumination, floral motifs, clouds,
-symbolic creatures, architecture, and intertwined forms.
-- The emoji references should appear symbolically and poetically,
-not literally or cartoonishly.
-- Avoid obvious narrative illustration.
-- Avoid smiling cartoon faces and playful character design.
-- Avoid modern digital illustration aesthetics.
-- Faces should feel solemn, mysterious, painterly, and timeless.
-- The scene should feel ancient, ceremonial, dreamlike, and immersive.
-- Preserve ambiguity and artistic interpretation.
-- Use rich Persian miniature colors:
-lapis blue, turquoise, emerald green,
-deep crimson, saffron gold, parchment beige.
-- Keep the composition crowded, intricate, and visually layered.
-- Inspired by museum-quality Persian manuscript paintings.
+Composition:
+- crowded manuscript-page composition
+- layered storytelling scenes
+- intertwined humans, animals, plants, clouds, architecture
+- intricate Persian borders and illuminated framing
+- decorative density across the whole image
+- visual richness and movement
+- miniature-style flat spatial perspective
+- subtle ambiguity and painterly abstraction
+- detailed textures and ornamental rhythm
+
+Figures:
+- figures should be partially stylized and slightly abstracted
+- faces soft, expressive, but not hyper-detailed
+- anatomy miniature-like rather than realistic
+- figures integrated into patterns and environment
+- emotional storytelling without looking like cartoons
+
+Color palette:
+- rich lapis blue
+- glowing turquoise
+- crimson red
+- malachite green
+- saffron yellow
+- burnished gold
+- copper orange
+- jewel-toned Persian manuscript colors
+- strong but elegant contrast
+- luminous mineral pigment appearance
+
+Texture and mood:
+- aged illuminated manuscript
+- handmade brush texture
+- layered pigment feel
+- ornamental complexity
+- mystical and poetic atmosphere
+- visually immersive and dense
+
+Style balance:
+50% authentic Persian miniature narrative painting
+50% poetic ornamental abstraction
+
+Avoid:
+- psychedelic neon abstraction
+- cartoon style
+- Disney expressions
+- modern fantasy concept art
+- minimalist empty scenes
+- obvious AI symmetry
+- photographic realism
+- clean vector illustration
+- isolated centered portrait compositions
+
+The emojis and theme should appear symbolically and naturally woven into the scene.
+
+Emojis: {emojis}
+Theme: {theme}
 """
+    )
 
 
 def clean_story(story):
