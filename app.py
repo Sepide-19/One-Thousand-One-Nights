@@ -1,144 +1,179 @@
+from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify, render_template
+import openai
 import os
 import json
-import openai
 
-# Load environment variables
+# ---------- LOAD ENV ----------
 load_dotenv()
 
-app = Flask(__name__, template_folder="templates", static_folder="static")
+# ---------- APP ----------
+app = Flask(
+    __name__,
+    template_folder="templates",
+    static_folder="static"
+)
+
 CORS(app)
 
-# OpenAI API key
+# ---------- OPENAI ----------
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+# ---------- STORAGE ----------
 STORY_FILE = "data/stories.json"
 
 
-# ---------- storage helpers ----------
 def ensure_story_file():
-    os.makedirs(os.path.dirname(STORY_FILE), exist_ok=True)
+
+    os.makedirs("data", exist_ok=True)
 
     if not os.path.exists(STORY_FILE):
+
         with open(STORY_FILE, "w", encoding="utf-8") as f:
-            json.dump([], f, ensure_ascii=False, indent=2)
+            json.dump([], f)
 
 
-def save_story(entry):
+def save_story(data):
+
     ensure_story_file()
 
     try:
+
         with open(STORY_FILE, "r", encoding="utf-8") as f:
             stories = json.load(f)
 
-            if not isinstance(stories, list):
-                stories = []
+    except:
 
-    except Exception:
         stories = []
 
-    stories.append(entry)
+    stories.append(data)
 
     with open(STORY_FILE, "w", encoding="utf-8") as f:
         json.dump(stories, f, ensure_ascii=False, indent=2)
 
 
-# ---------- routes ----------
+# ---------- ROUTES ----------
 @app.route("/")
-def index():
+def home():
     return render_template("index.html")
 
 
 @app.route("/generate", methods=["POST"])
 def generate():
 
-    # receive form/json
-    data = request.get_json(silent=True) or request.form.to_dict()
+    data = request.get_json()
 
-    emojis = (data.get("emojis") or "").strip()
-    theme = (data.get("theme") or "").strip()
+    emojis = data.get("emojis", "")
+    theme = data.get("theme", "")
 
     if not emojis or not theme:
-        return jsonify({"error": "Emojis and theme are required"}), 400
+
+        return jsonify({
+            "error": "Theme and emojis are required"
+        }), 400
 
     try:
 
         # ---------- STORY ----------
-        story_prompt = (
-            "Write a short magical story in English (4-6 sentences). "
-            "Inspired by One Thousand and One Nights. "
-            "Begin with 'Once' or 'Once upon a time'. "
-            "End with a complete satisfying ending. "
-            f"Theme: {theme}. Emojis: {emojis}."
-        )
+        prompt = f"""
+Write a short magical story in English.
+
+Theme: {theme}
+Emojis: {emojis}
+
+Rules:
+- Inspired by One Thousand and One Nights
+- Start with "Once upon a time"
+- 4 to 6 sentences
+- Beautiful ending
+"""
 
         chat = openai.ChatCompletion.create(
+
             model="gpt-3.5-turbo",
+
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a poetic storyteller."
+                    "content": "You are a magical storyteller."
                 },
                 {
                     "role": "user",
-                    "content": story_prompt
+                    "content": prompt
                 }
             ],
+
             temperature=0.9,
-            max_tokens=300
+            max_tokens=250
         )
 
-        story = chat["choices"][0]["message"]["content"].strip()
+        story = chat["choices"][0]["message"]["content"]
 
         # ---------- IMAGE ----------
-        image_prompt = (
-            "Persian miniature painting, delicate details, "
-            "traditional Iranian miniature art, gold accents, "
-            "ornamental composition, poetic atmosphere. "
-            f"Theme: {theme}. Emojis: {emojis}."
-        )
+        image_prompt = f"""
+Persian miniature painting.
+Traditional Iranian art.
+Golden details.
+Magical atmosphere.
+
+Theme: {theme}
+Emojis: {emojis}
+"""
 
         image = openai.Image.create(
-            model="gpt-image-1",
+
             prompt=image_prompt,
+
             n=1,
-            size="1024x1024"
+
+            size="512x512"
         )
 
-        image_url = (
-            "data:image/png;base64," +
-            image["data"][0]["b64_json"]
-        )
+        image_url = image["data"][0]["url"]
 
-        # ---------- RESULT ----------
-        result = {
-            "story": story,
-            "image_url": image_url
-        }
-
-        # save story
+        # ---------- SAVE ----------
         save_story({
-            "emojis": emojis,
+
             "theme": theme,
+            "emojis": emojis,
             "story": story,
             "image_url": image_url
+
         })
 
-        return jsonify(result)
+        return jsonify({
+
+            "story": story,
+            "image_url": image_url
+
+        })
 
     except Exception as e:
-        print("ERROR:", repr(e))
-        return jsonify({"error": str(e)}), 500
+
+        print(e)
+
+        return jsonify({
+            "error": str(e)
+        }), 500
 
 
 @app.route("/health")
 def health():
-    return {"status": "ok"}
+
+    return {
+        "status": "ok"
+    }
 
 
+# ---------- RUN ----------
 if __name__ == "__main__":
+
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+
+    app.run(
+        host="0.0.0.0",
+        port=port,
+        debug=True
+    )
 
