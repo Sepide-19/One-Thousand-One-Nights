@@ -7,12 +7,7 @@ from datetime import datetime
 
 load_dotenv()
 
-app = Flask(
-    __name__,
-    template_folder="templates",
-    static_folder="static"
-)
-
+app = Flask(__name__, template_folder="templates", static_folder="static")
 CORS(app)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -26,7 +21,6 @@ def ensure_data_folder():
 
 def ensure_story_file():
     ensure_data_folder()
-
     if not os.path.exists(STORY_FILE):
         with open(STORY_FILE, "w", encoding="utf-8") as f:
             json.dump([], f, ensure_ascii=False, indent=2)
@@ -34,16 +28,10 @@ def ensure_story_file():
 
 def load_stories():
     ensure_story_file()
-
     try:
         with open(STORY_FILE, "r", encoding="utf-8") as f:
             stories = json.load(f)
-
-        if isinstance(stories, list):
-            return stories
-
-        return []
-
+        return stories if isinstance(stories, list) else []
     except Exception:
         return []
 
@@ -51,7 +39,6 @@ def load_stories():
 def save_story(entry):
     stories = load_stories()
     stories.append(entry)
-
     with open(STORY_FILE, "w", encoding="utf-8") as f:
         json.dump(stories, f, ensure_ascii=False, indent=2)
 
@@ -71,113 +58,36 @@ def build_story_prompt(emojis, theme):
 
 def build_image_prompt(emojis, theme):
     return (
-        f"""
-Create a museum-quality contemporary Persian miniature painting
-inspired by illuminated Iranian manuscripts and Shahnameh visual culture.
+        "Create a richly detailed Persian manuscript-style illustration inspired by "
+        "Shahnameh miniatures, illuminated Iranian manuscripts, and epic Persian painting. "
 
-The artwork should feel genuinely artistic and curatorial —
-like a contemporary artwork shown at a biennale or major museum exhibition,
-NOT fantasy illustration, NOT cartoon, NOT decorative AI art.
+        "The artwork should be visually dense, layered, ornate, and full of intricate details. "
+        "Use crowded compositions, decorative borders, symbolic creatures, celestial forms, "
+        "mythical motifs, floral arabesques, gold illumination, complex textures, "
+        "miniature-style spatial flattening, and poetic visual storytelling. "
 
-The image should balance:
-- narrative clarity
-- painterly abstraction
-- emotional atmosphere
-- ornamental density
-- sophisticated color relationships
+        "Avoid clean minimalist portraits or empty compositions. "
+        "The image should feel alive, mysterious, ceremonial, excessive, and visually immersive. "
 
-Visual language:
-- layered miniature composition
-- dense ornamental space
-- poetic visual storytelling
-- fragmented narrative scenes
-- symbolic architecture and gardens
-- manuscript borders and illuminated framing
-- flowing Persian cloud motifs
-- intertwined humans, animals, plants, textiles
-- subtle visual chaos and movement
-- asymmetrical composition
-- tactile painterly surfaces
+        "Blend traditional Persian miniature aesthetics with subtle surrealism and dreamlike symbolism. "
+        "Include ornamental chaos, overlapping decorative elements, handwritten manuscript energy, "
+        "and the feeling of an ancient illuminated page discovered in a forgotten archive. "
 
-Very important:
-Each generated image should feel visually UNIQUE,
-with changing compositions, changing palettes,
-changing spatial rhythms, and changing emotional tone.
+        "Use deep blues, lapis lazuli tones, gold leaf textures, aged paper feeling, "
+        "intricate linework, and elaborate framing. "
 
-Do NOT repeat the same dark blue palette every time.
+        "The artwork should resemble a fragmented illuminated Shahnameh manuscript page "
+        "rediscovered from a lost archive. "
+        "Include asymmetry, layered visual storytelling, marginalia-like details, hidden creatures, "
+        "floating ornaments, miniature crowds, symbolic architecture, and poetic visual noise. "
 
-Color direction:
-Use richer and more adventurous Persian miniature palettes:
-- lapis blue
-- turquoise
-- emerald green
-- deep crimson
-- saffron yellow
-- rose pink
-- burnt orange
-- copper
-- gold leaf tones
-- ivory
-- smoky indigo
-- pomegranate red
+        "Avoid clean symmetry or polished portrait photography aesthetics. "
+        "Avoid distorted AI faces, photorealism, or modern fantasy game aesthetics. "
+        "Faces should resemble simplified painted figures from Persian manuscripts. "
+        "Use layered miniature storytelling scenes instead of a single centered portrait. "
+        "Maintain clear miniature-style figures and readable narrative scenes within the ornamental complexity. "
 
-Colors should feel luminous, layered, mineral, and painterly —
-not flat or monochromatic.
-
-Some images may be:
-- warmer
-- greener
-- more golden
-- more turquoise
-- dusk-toned
-- rose-toned
-- jewel-toned
-
-The palette should evolve naturally from the mood of the story.
-
-Figures:
-- semi-recognizable figures
-- understated expressions
-- elongated miniature-like anatomy
-- poetic gestures
-- partially absorbed into texture and ornament
-- no cartoon smiles
-- no theatrical posing
-
-Texture:
-- layered pigments
-- aged manuscript texture
-- delicate brushwork
-- hand-painted imperfections
-- subtle grain
-- visible painterly depth
-
-Mood:
-- contemplative
-- mystical
-- emotionally intelligent
-- poetic
-- culturally grounded
-- visually immersive
-
-Avoid:
-- cartoon aesthetics
-- children's-book illustration
-- obvious AI symmetry
-- fantasy concept art
-- poster design
-- psychedelic neon abstraction
-- repetitive compositions
-- monochromatic blue-only palettes
-- hyper-clean rendering
-- photorealism
-
-The emojis and theme should appear subtly and symbolically,
-woven naturally into the manuscript world rather than illustrated literally.
-
-Emojis: {emojis}
-Theme: {theme}
-"""
+        f"Emojis: {emojis}. Theme: {theme}."
     )
 
 
@@ -198,9 +108,7 @@ def clean_story(story):
 
 def get_openai_client():
     if not OPENAI_API_KEY:
-        raise RuntimeError(
-            "OPENAI_API_KEY is missing in Render Environment Variables"
-        )
+        raise RuntimeError("OPENAI_API_KEY is missing")
 
     from openai import OpenAI
     return OpenAI(api_key=OPENAI_API_KEY)
@@ -213,9 +121,9 @@ def generate_story_with_openai(client, emojis, theme):
             {
                 "role": "system",
                 "content": (
-                    "You are a concise imaginative writer. "
-                    "Your stories always begin with 'Once' or "
-                    "'Once upon a time' and end clearly."
+                    "You are a concise, imaginative writer. "
+                    "Your stories always begin with 'Once' or 'Once upon a time' "
+                    "and conclude with a clear ending."
                 )
             },
             {
@@ -223,31 +131,28 @@ def generate_story_with_openai(client, emojis, theme):
                 "content": build_story_prompt(emojis, theme)
             }
         ],
-        temperature=0.95,
+        temperature=0.9,
         max_tokens=400
     )
 
-    story = response.choices[0].message.content
-    return clean_story(story)
+    return clean_story(response.choices[0].message.content)
 
 
 def generate_image_with_openai(client, emojis, theme):
-    prompt = build_image_prompt(emojis, theme)
-
     response = client.images.generate(
-        model="gpt-image-1",
-        prompt=prompt,
+        model="gpt-image-1-mini",
+        prompt=build_image_prompt(emojis, theme),
         size="1024x1024",
-        quality="medium",
+        quality="low",
         n=1
     )
 
     image_base64 = response.data[0].b64_json
 
     if not image_base64:
-        raise RuntimeError("Image generation failed")
+        raise RuntimeError("Image generation returned no image data")
 
-    return f"data:image/png;base64,{image_base64}"
+    return "data:image/png;base64," + image_base64
 
 
 @app.route("/", methods=["GET"])
@@ -283,22 +188,8 @@ def generate():
     try:
         client = get_openai_client()
 
-        story = generate_story_with_openai(
-            client,
-            emojis,
-            theme
-        )
-
-        image_url = generate_image_with_openai(
-            client,
-            emojis,
-            theme
-        )
-
-        result = {
-            "story": story,
-            "image_url": image_url
-        }
+        story = generate_story_with_openai(client, emojis, theme)
+        image_url = generate_image_with_openai(client, emojis, theme)
 
         save_story({
             "created_at": datetime.utcnow().isoformat() + "Z",
@@ -308,11 +199,13 @@ def generate():
             "image_url": image_url
         })
 
-        return jsonify(result)
+        return jsonify({
+            "story": story,
+            "image_url": image_url
+        })
 
     except Exception as e:
         print("❌ /generate error:", repr(e))
-
         return jsonify({
             "error": str(e)
         }), 500
