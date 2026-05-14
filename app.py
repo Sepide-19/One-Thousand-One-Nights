@@ -79,28 +79,35 @@ def build_story_prompt(emojis, theme):
 
 def build_image_prompt(emojis, theme):
     return f"""
-Create a dense narrative Persian miniature inspired by Shahnameh manuscripts,
-Safavid paintings, illuminated Iranian miniatures, and mystical Persian book arts.
+Create an intricate Persian manuscript-style miniature inspired by
+Shahnameh illuminations, Safavid painting, mystical Iranian manuscript arts,
+and antique Persian illustrated books.
 
-The image must clearly incorporate these emoji symbols and themes:
+The composition must subtly incorporate these symbols and themes:
 {emojis}
 
 Theme:
 {theme}
 
-Important:
-- The emoji symbols should visibly appear as transformed narrative elements,
-animals, objects, costumes, gestures, architecture, or decorative motifs.
-- The composition should feel crowded, layered, ornate, symbolic, and alive.
-- Include many intertwined figures, creatures, floral patterns, clouds,
-gold textures, manuscript borders, and miniature storytelling details.
-- Avoid modern realism.
-- Avoid empty portrait compositions.
-- Preserve a framed manuscript-page composition.
-- Make the scene feel mythic, theatrical, dreamlike, and story-driven.
-- Use deep lapis blue, aged gold, turquoise, faded red, parchment textures.
-- Inspired by Persian epic manuscripts and illuminated Shahnameh pages,
-but interpreted in a contemporary artistic way.
+Important aesthetic directions:
+
+- The image should feel like a lost illuminated manuscript page.
+- Maintain a rich decorative border and framed composition.
+- Use dense layered ornamentation, miniature textures,
+gold leaf atmosphere, floral motifs, clouds, symbolic creatures,
+architectural fragments, and intertwined visual storytelling.
+- The emoji references should appear symbolically and poetically,
+not literally or cartoonishly.
+- Avoid cartoon expressions, exaggerated smiling faces,
+children-book aesthetics, or playful illustration style.
+- Avoid modern digital-art character design.
+- Faces should feel solemn, mysterious, painterly, and timeless.
+- The scene should feel mystical, dreamlike, ceremonial, and ancient.
+- Inspired by Persian epic manuscripts rather than animation.
+- Use aged lapis blue, oxidized gold, parchment beige,
+dark turquoise, faded crimson, and smoky shadows.
+- Keep the image visually dense and immersive.
+- Preserve ambiguity and artistic interpretation.
 """
 
 
@@ -124,6 +131,7 @@ def clean_story(story):
 # ----------------------------
 
 def get_openai_client():
+
     if not OPENAI_API_KEY:
         raise RuntimeError(
             "OPENAI_API_KEY is missing in Render Environment Variables"
