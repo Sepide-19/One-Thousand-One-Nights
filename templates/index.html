@@ -6,17 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>One Thousand and One Nights</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-gray-100 font-sans">
 
   <div class="max-w-lg mx-auto mt-10 bg-white shadow-md rounded-lg p-6">
-    <!-- Title -->
     <h1 class="text-2xl font-bold text-center mb-2">One Thousand and One Nights</h1>
+
     <p class="text-sm text-gray-600 text-center mb-6">
       Enter 3–5 emojis and a theme, get a short story + <b>Persian miniature</b> illustration
     </p>
+
     <p class="text-xs text-gray-500 text-center mb-4">
       Sepideh Takshi: After the Archive, the Body Speaks, curated by Victor Murari now available to the public,
       <a href="https://takshi.victormurari.art/" target="_blank" rel="noopener noreferrer"
@@ -25,29 +25,25 @@
       </a>
     </p>
 
-    <!-- Inputs -->
     <div class="flex gap-2 mb-4">
       <input id="emojiInput" type="text" placeholder="e.g. 🌙🦚🌸"
         class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300" />
+
       <input id="themeInput" type="text" placeholder="e.g. Mystery"
         class="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300" />
     </div>
 
-    <!-- Button -->
     <button id="goBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition">
       Generate Story
     </button>
 
-    <!-- Error -->
     <div id="errorBox" class="hidden mt-3 bg-red-100 border border-red-300 text-red-800 text-sm rounded px-3 py-2">
     </div>
 
-    <!-- Story -->
     <div id="storyBox" class="hidden mt-6 bg-blue-50 text-gray-800 p-4 rounded text-sm leading-relaxed"></div>
 
-    <!-- Image -->
     <div class="mt-6">
-      <img id="imageOutput" src="" alt="" class="hidden rounded shadow" />
+      <img id="imageOutput" src="" alt="Persian miniature illustration" class="hidden rounded shadow w-full" />
     </div>
   </div>
 
@@ -68,6 +64,7 @@
       errorBox.classList.add('hidden');
       storyBox.classList.add('hidden');
       img.classList.add('hidden');
+      img.src = '';
 
       const emojis = emojiInput.value.trim();
       const theme = themeInput.value.trim();
@@ -83,19 +80,33 @@
 
         const res = await fetch('/generate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
           body: JSON.stringify({ emojis, theme })
         });
-        const data = await res.json();
 
-        if (!res.ok || data.error) throw new Error(data.error || 'Server error');
+        const text = await res.text();
 
-        // show ~4–6 sentence story (as returned)
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          throw new Error('Server returned HTML instead of JSON. Check Render Logs for the real backend error.');
+        }
+
+        if (!res.ok || data.error) {
+          throw new Error(data.error || 'Server error');
+        }
+
         storyBox.textContent = (data.story || '').trim();
         storyBox.classList.remove('hidden');
 
-        img.src = data.image_url || '';
-        if (img.src) img.classList.remove('hidden');
+        if (data.image_url) {
+          img.src = data.image_url;
+          img.classList.remove('hidden');
+        }
 
       } catch (err) {
         showError(err.message || 'Something went wrong.');
@@ -106,8 +117,14 @@
     }
 
     goBtn.addEventListener('click', generate);
+
     [emojiInput, themeInput].forEach(el =>
-      el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); generate(); } })
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          generate();
+        }
+      })
     );
   </script>
 </body>
